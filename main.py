@@ -11,8 +11,7 @@ from mediapipe.tasks.python.vision import (
     RunningMode,
 )
  
- #carregamento de imagens
- 
+ #Carregamento das imagens
 IMAGES = {
     "sorriso": "imgs/sorriso.jpeg",
     "boca_aberta": "imgs/boca_aberta.jpeg",
@@ -24,6 +23,7 @@ IMAGES = {
     "paz": "imgs/paz.jpg",
 }
  
+#Arquivos .task são modelos de rostos e mãos que as redes neurais do MediaPipe usa para detectar os landmarks (pontos da face e mão).
 FACE_MODEL_PATH = "models/face_landmarker.task"
 HAND_MODEL_PATH = "models/hand_landmarker.task"
  
@@ -35,7 +35,7 @@ THRESHOLDS = {
  
 DEBOUNCE_FRAMES = 6
  
- 
+ #Criação dos detectores uma única vez fora do loop, para melhorar a performance o modelo não pode ser carregado a cada frame.
 face_options = FaceLandmarkerOptions(
     base_options=BaseOptions(model_asset_path=FACE_MODEL_PATH),
     running_mode=RunningMode.VIDEO,
@@ -124,9 +124,7 @@ def classify_hand_gesture(lm, handedness_label):
     return None
  
  
-# ----------------------------------------------------------------
-# Loop principal
-# ----------------------------------------------------------------
+#loop principal
  
 def main():
     cap = cv2.VideoCapture(0)
@@ -155,14 +153,12 @@ def main():
  
         frame = cv2.flip(frame, 1)
         rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
- 
-        # A API nova exige um objeto mp.Image e um timestamp (ms)
+      
         mp_image = mp.Image(image_format=mp.ImageFormat.SRGB, data=rgb)
         timestamp_ms = int((time.time() - start_time) * 1000)
  
         estado_detectado = None
  
-        # --- Mão tem prioridade sobre expressão ---
         hand_result = hand_landmarker.detect_for_video(mp_image, timestamp_ms)
         if hand_result.hand_landmarks:
             hand_lm = hand_result.hand_landmarks[0]
@@ -171,14 +167,11 @@ def main():
             if gesto:
                 estado_detectado = gesto
  
-            # Desenha os pontos da mão manualmente (API nova não
-            # inclui mais mp_drawing pronto como antes)
             h, w, _ = frame.shape
             for ponto in hand_lm:
                 cx, cy = int(ponto.x * w), int(ponto.y * h)
                 cv2.circle(frame, (cx, cy), 4, (0, 255, 0), -1)
  
-        # --- Se não achou gesto de mão, tenta expressão facial ---
         if estado_detectado is None:
             face_result = face_landmarker.detect_for_video(mp_image, timestamp_ms)
             if face_result.face_landmarks:
@@ -188,13 +181,11 @@ def main():
         if estado_detectado is None:
             estado_detectado = "neutro"
  
-        # --- Debounce ---
         history.append(estado_detectado)
         mais_comum, contagem = Counter(history).most_common(1)[0]
         if contagem == len(history):
             estado_atual = mais_comum
  
-        # --- Exibição ---
         cv2.putText(
             frame, f"Estado: {estado_atual}", (10, 30),
             cv2.FONT_HERSHEY_SIMPLEX, 0.9, (0, 255, 0), 2, cv2.LINE_AA
@@ -215,3 +206,4 @@ def main():
  
 if __name__ == "__main__":
     main()
+ 
