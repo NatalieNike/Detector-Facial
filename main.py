@@ -11,7 +11,7 @@ from mediapipe.tasks.python.vision import (
     RunningMode,
 )
  
- #Carregamento das imagens
+ #carregamento das imagens
 IMAGES = {
     "sorriso": "imgs/sorriso.jpeg",
     "boca_aberta": "imgs/boca_aberta.jpeg",
@@ -21,9 +21,10 @@ IMAGES = {
     "punho": "imgs/punho.jpeg",
     "joia": "imgs/joia.jpeg",
     "paz": "imgs/paz.jpg",
+    "olho_arregalado": "imgs/olho_arregalado.jpeg"
 }
  
-#Arquivos .task são modelos de rostos e mãos que as redes neurais do MediaPipe usa para detectar os landmarks (pontos da face e mão).
+#arquivos .task são modelos de rostos e mãos que as redes neurais do MediaPipe usa para detectar os landmarks (pontos da face e mão).
 FACE_MODEL_PATH = "models/face_landmarker.task"
 HAND_MODEL_PATH = "models/hand_landmarker.task"
  
@@ -31,11 +32,12 @@ THRESHOLDS = {
     "sorriso_ratio": 0.42,
     "boca_aberta_ratio": 0.055,
     "sobrancelha_ratio": 0.145,
+    "olho_arregalado_ratio": 0.077,
 }
  
 DEBOUNCE_FRAMES = 6
  
- #Criação dos detectores uma única vez fora do loop, para melhorar a performance o modelo não pode ser carregado a cada frame.
+ #criação dos detectores uma única vez fora do loop, para não ser necessário carregar o modelo a cada frame.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                lhorar a performance o modelo não pode ser carregado a cada frame.
 face_options = FaceLandmarkerOptions(
     base_options=BaseOptions(model_asset_path=FACE_MODEL_PATH),
     running_mode=RunningMode.VIDEO,
@@ -50,12 +52,11 @@ hand_options = HandLandmarkerOptions(
 )
 hand_landmarker = HandLandmarker.create_from_options(hand_options)
  
- 
+ #visão computacional
 def dist(p1, p2):
     return np.hypot(p1.x - p2.x, p1.y - p2.y)
 
-#classificação de expressão facial
- 
+#classificação de expressão facial, atribuição de valores para boca, sorriso, sobrancelha e etc.
 def classify_expression(lm):
     """lm: lista de landmarks do rosto (result.face_landmarks[0])."""
     left_face = lm[234]
@@ -74,13 +75,18 @@ def classify_expression(lm):
     mouth_open = dist(mouth_top, mouth_bottom)
  
     left_brow = lm[105]
-    left_eye = lm[159]
-    brow_eye_dist = dist(left_brow, left_eye)
+    left_eye_top = lm[159]
+    left_eye_bottom = lm[145]
+    brow_eye_dist = dist(left_brow, left_eye_top)
+    eye_open = dist(left_eye_top, left_eye_bottom)
  
     smile_ratio = mouth_width / face_width
     open_ratio = mouth_open / face_height
     brow_ratio = brow_eye_dist / face_height
+    eye_open_ratio = eye_open / face_height
  
+    if eye_open_ratio > THRESHOLDS["olho_arregalado_ratio"]:
+        return "olho_arregalado"
     if open_ratio > THRESHOLDS["boca_aberta_ratio"]:
         return "boca_aberta"
     if brow_ratio > THRESHOLDS["sobrancelha_ratio"]:
@@ -89,12 +95,11 @@ def classify_expression(lm):
         return "sorriso"
     return "neutro"
  
-#classificação de gesto de mão
- 
+#classificação de gesto de mão, tip representa a ponta do dedo e pip a articulação intermediária.
 FINGER_TIPS = [4, 8, 12, 16, 20]
 FINGER_PIPS = [3, 6, 10, 14, 18]
  
- 
+ #verificação da posição dos dedos, esticados ou encolhidos, determina o gesto da mão.
 def fingers_up(lm, handedness_label):
     """lm: lista de landmarks da mão (result.hand_landmarks[0])."""
     fingers = []
@@ -125,7 +130,6 @@ def classify_hand_gesture(lm, handedness_label):
  
  
 #loop principal
- 
 def main():
     cap = cv2.VideoCapture(0)
     if not cap.isOpened():
