@@ -1,21 +1,10 @@
-# Detecção Facial e Gestos com MediaPipe
+# Detecção Facial e de Gestos com MediaPipe
 
 Projeto de estudos em visão computacional que utiliza a webcam para detectar **expressões faciais** e **gestos de mão** em tempo real, exibindo uma imagem correspondente ao estado identificado.
 
-> **Status do projeto:** este é um protótipo experimental, criado de forma descontraída como exercício de aprendizado em Machine Learning e Visão Computacional. A lógica de classificação é baseada em geometria simples (razões entre distâncias de landmarks) e não em um modelo treinado — funciona bem como prova de conceito, mas tem limitações conhecidas (ver seção [Limitações](#limitações-atuais)).
+> **Status do projeto:** este é um protótipo experimental, criado de forma descontraída como exercício de aprendizado em Machine Learning e Visão Computacional.
 >
-> O projeto está em evolução para se tornar um **sistema de detecção e reconhecimento facial mais robusto**, com persistência em banco de dados e identificação de pessoas. Veja o [roadmap](#roadmap-evolução-planejada) abaixo.
-
-## Sumário
-
-- [Como funciona](#como-funciona)
-- [Requisitos](#requisitos)
-- [Instalação](#instalação)
-- [Uso](#uso)
-- [Estrutura do projeto](#estrutura-do-projeto)
-- [Limitações atuais](#limitações-atuais)
-- [Roadmap (evolução planejada)](#roadmap-evolução-planejada)
-- [Aviso sobre privacidade](#aviso-sobre-privacidade)
+> O projeto está em evolução para se tornar um **sistema de detecção e reconhecimento facial mais robusto**, com persistência em banco de dados e identificação de pessoas. 
 
 ## Como funciona
 
@@ -53,37 +42,8 @@ Disponíveis em: https://ai.google.dev/edge/mediapipe/solutions/vision
 
 Adicione as imagens correspondentes a cada estado na pasta `imgs/` (ver dicionário `IMAGES` no código para os nomes de arquivo esperados).
 
-## Uso
-
-```bash
-python main.py
-```
-
-- Pressione `q` para encerrar o programa.
-- Duas janelas serão abertas: `Webcam` (vídeo com overlay do estado detectado) e `Resultado` (imagem correspondente ao estado atual).
-
-## Estrutura do projeto
 
 ```
-.
-├── main.py              # script principal
-├── models/               # modelos .task do MediaPipe (não versionados)
-│   ├── face_landmarker.task
-│   └── hand_landmarker.task
-├── imgs/                 # imagens exibidas para cada estado
-└── README.md
-```
-
-## Limitações atuais
-
-Documentar isso é importante tanto para transparência quanto para orientar a evolução do projeto:
-
-- **Apenas uma pessoa e uma mão por vez** (`num_faces=1`, `num_hands=1`).
-- **Thresholds calibrados manualmente**, sensíveis a iluminação, ângulo de câmera e características individuais do rosto — não generalizam bem entre pessoas diferentes sem reajuste.
-- **Sem reconhecimento de identidade**: o sistema detecta *que há* um rosto e *qual expressão* ele tem, mas não sabe *de quem* é o rosto.
-- **Sem persistência de dados**: nada é salvo entre execuções; cada sessão começa do zero.
-- **Prioridade fixa entre expressões**: quando múltiplas condições são satisfeitas simultaneamente (ex: sorriso + sobrancelha levantada), a ordem dos `if` no código decide qual prevalece, o que pode não refletir a expressão dominante percebida por um humano.
-- **Sem tratamento de erros** para modelos ausentes ou falha de inicialização da webcam.
 
 ## Roadmap (evolução planejada)
 
