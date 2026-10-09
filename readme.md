@@ -26,24 +26,6 @@ A lógica de classificação é baseada em **thresholds (limiares) calibrados ma
   - `mediapipe`
   - `numpy`
 
-## Instalação
-
-```bash
-git clone <url-do-repositorio>
-cd <nome-do-projeto>
-pip install opencv-python mediapipe numpy
-```
-
-Baixe os modelos do MediaPipe e coloque na pasta `models/`:
-- `face_landmarker.task`
-- `hand_landmarker.task`
-
-Disponíveis em: https://ai.google.dev/edge/mediapipe/solutions/vision
-
-Adicione as imagens correspondentes a cada estado na pasta `imgs/` (ver dicionário `IMAGES` no código para os nomes de arquivo esperados).
-
-
-```
 
 ## Roadmap (evolução planejada)
 
